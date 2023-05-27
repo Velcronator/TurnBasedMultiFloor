@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6683158678498885270}
   - component: {fileID: 4802467772324293820}
+  - component: {fileID: -7068075209484132697}
   m_Layer: 0
   m_Name: BarrelInteract
   m_TagString: Untagged
@@ -48,12 +49,26 @@ MonoBehaviour:
   barrelDestroyedPrefab: {fileID: 6683158678498885270, guid: ae6b2bf74f2c3b541b5223ba3a0236dc,
     type: 3}
   visualGameObject: {fileID: 6681695263794529413}
+--- !u!114 &-7068075209484132697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6683158678498885271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19eb55d84573ee841ab269225a8be9d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dynamicFloorPosition: 0
+  ignoreRendererList: []
 --- !u!1001 &6683158678922736467
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    serializedVersion: 2
+    serializedVersion: 3
     m_TransformParent: {fileID: 6683158678498885270}
     m_Modifications:
     - target: {fileID: 1547116696582102, guid: f750d5f061e724f4c827ab6b376e2550, type: 3}
@@ -127,7 +142,9 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: f685a57b9da560a448bb95374a652f90, type: 2}
     m_RemovedComponents:
     - {fileID: 64866121705718766, guid: f750d5f061e724f4c827ab6b376e2550, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f750d5f061e724f4c827ab6b376e2550, type: 3}
 --- !u!4 &6679036940186439537 stripped
 Transform:
