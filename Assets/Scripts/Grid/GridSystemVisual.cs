@@ -55,7 +55,7 @@ public class GridSystemVisual : MonoBehaviour
         {
             for (int z = 0; z < LevelGrid.Instance.GetHeight(); z++)
             {
-                for(int floor = 0; floor < LevelGrid.Instance.GetFloorAmount(); floor++)
+                for (int floor = 0; floor < LevelGrid.Instance.GetFloorAmount(); floor++)
                 {
                     GridPosition gridPosition = new GridPosition(x, z, floor);
 
@@ -68,7 +68,8 @@ public class GridSystemVisual : MonoBehaviour
         }
 
         UnitActionSystem.Instance.OnSelectedActionChanged += UnitActionSystem_OnSelectedActionChanged;
-        LevelGrid.Instance.OnAnyUnitMovedGridPosition += LevelGrid_OnAnyUnitMovedGridPosition;
+        UnitActionSystem.Instance.OnBusyChanged += UnitActionSystem_OnBusyChanged;
+        //LevelGrid.Instance.OnAnyUnitMovedGridPosition += LevelGrid_OnAnyUnitMovedGridPosition;
 
         UpdateGridVisual();
     }
@@ -184,6 +185,11 @@ public class GridSystemVisual : MonoBehaviour
 
         ShowGridPositionList(
             selectedAction.GetValidActionGridPositionList(), gridVisualType);
+    }
+
+    private void UnitActionSystem_OnBusyChanged(object sender, bool e)
+    {
+        UpdateGridVisual();
     }
 
     private void UnitActionSystem_OnSelectedActionChanged(object sender, EventArgs e)

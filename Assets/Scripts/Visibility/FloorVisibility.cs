@@ -28,7 +28,6 @@ public class FloorVisibility : MonoBehaviour
 
     private void Update()
     {
-        // TODO should be fired with by a event triggered when the player changes floor
         if (dynamicFloorPosition)
         {
             floor = LevelGrid.Instance.GetFloor(transform.position);

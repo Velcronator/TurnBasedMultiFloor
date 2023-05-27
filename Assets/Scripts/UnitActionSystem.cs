@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 
 public class UnitActionSystem : MonoBehaviour
 {
-
     public static UnitActionSystem Instance { get; private set; }
 
 
@@ -41,7 +40,6 @@ public class UnitActionSystem : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(LevelGrid.Instance.GetGridPosition(MouseWorld.GetPosition()));
         if (isBusy)
         {
             return;
@@ -69,7 +67,7 @@ public class UnitActionSystem : MonoBehaviour
     {
         if (InputManager.Instance.IsMouseButtonDownThisFrame())
         {
-            GridPosition mouseGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPosition());
+            GridPosition mouseGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPositionOnlyHitVisible());
 
             if (!selectedAction.IsValidActionGridPosition(mouseGridPosition))
             {
