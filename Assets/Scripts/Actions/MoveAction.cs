@@ -8,6 +8,12 @@ public class MoveAction : BaseAction
 
     public event EventHandler OnStartMoving;
     public event EventHandler OnStopMoving;
+    public event EventHandler<OnChangeFloorsStartedEventArgs> OnChangedFloorsStarted;
+    public class OnChangeFloorsStartedEventArgs : EventArgs
+    {
+        public GridPosition unitGridPosition;
+        public GridPosition targetGridPosition;
+    }
 
 
 
@@ -15,6 +21,9 @@ public class MoveAction : BaseAction
 
     private List<Vector3> positionList;
     private int currentPositionIndex;
+    private bool isChangingFloors;
+    private float differentFloorsTeleportTimer;
+    private float differentFloorsTeleportTimerMax = .5f;
 
     private void Update()
     {
@@ -24,18 +33,39 @@ public class MoveAction : BaseAction
         }
 
         Vector3 targetPosition = positionList[currentPositionIndex];
-        Vector3 moveDirection = (targetPosition - transform.position).normalized;
 
-        float rotateSpeed = 10f;
-        transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
-
-        float stoppingDistance = .1f;
-        if (Vector3.Distance(transform.position, targetPosition) > stoppingDistance)
+        if (isChangingFloors)
         {
+            // Stop and Teleport Logic
+            Vector3 targetSameFloorPosition = targetPosition;
+            targetSameFloorPosition.y = transform.position.y;
+
+            Vector3 rotateDirection = (targetSameFloorPosition - transform.position).normalized;
+
+            float rotateSpeed = 10f;
+            transform.forward = Vector3.Slerp(transform.forward, rotateDirection, Time.deltaTime * rotateSpeed);
+
+            differentFloorsTeleportTimer -= Time.deltaTime;
+            if (differentFloorsTeleportTimer < 0f)
+            {
+                isChangingFloors = false;
+                transform.position = targetPosition;
+            }
+        }
+        else
+        {
+            // Regular move logic
+            Vector3 moveDirection = (targetPosition - transform.position).normalized;
+
+            float rotateSpeed = 10f;
+            transform.forward = Vector3.Slerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
+
             float moveSpeed = 4f;
             transform.position += moveDirection * moveSpeed * Time.deltaTime;
         }
-        else
+
+        float stoppingDistance = .1f;
+        if (Vector3.Distance(transform.position, targetPosition) < stoppingDistance)
         {
             currentPositionIndex++;
             if (currentPositionIndex >= positionList.Count)
@@ -43,6 +73,25 @@ public class MoveAction : BaseAction
                 OnStopMoving?.Invoke(this, EventArgs.Empty);
 
                 ActionComplete();
+            }
+            else
+            {
+                targetPosition = positionList[currentPositionIndex];
+                GridPosition targetGridPosition = LevelGrid.Instance.GetGridPosition(targetPosition);
+                GridPosition unitGridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
+
+                if (targetGridPosition.floor != unitGridPosition.floor)
+                {
+                    // Different floors
+                    isChangingFloors = true;
+                    differentFloorsTeleportTimer = differentFloorsTeleportTimerMax;
+
+                    OnChangedFloorsStarted?.Invoke(this, new OnChangeFloorsStartedEventArgs
+                    {
+                        unitGridPosition = unitGridPosition,
+                        targetGridPosition = targetGridPosition,
+                    });
+                }
             }
         }
     }
@@ -75,44 +124,47 @@ public class MoveAction : BaseAction
         {
             for (int z = -maxMoveDistance; z <= maxMoveDistance; z++)
             {
-                GridPosition offsetGridPosition = new GridPosition(x, z, 0);
-                GridPosition testGridPosition = unitGridPosition + offsetGridPosition;
-
-                if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
+                for (int floor = -maxMoveDistance; floor <= maxMoveDistance; floor++)
                 {
-                    continue;
-                }
+                    GridPosition offsetGridPosition = new GridPosition(x, z, floor);
+                    GridPosition testGridPosition = unitGridPosition + offsetGridPosition;
 
-                if (unitGridPosition == testGridPosition)
-                {
-                    // Same Grid Position where the unit is already at
-                    continue;
-                }
+                    if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
+                    {
+                        continue;
+                    }
 
-                if (LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
-                {
-                    // Grid Position already occupied with another Unit
-                    continue;
-                }
+                    if (unitGridPosition == testGridPosition)
+                    {
+                        // Same Grid Position where the unit is already at
+                        continue;
+                    }
 
-                if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))
-                {
-                    continue;
-                }
+                    if (LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
+                    {
+                        // Grid Position already occupied with another Unit
+                        continue;
+                    }
 
-                if (!Pathfinding.Instance.HasPath(unitGridPosition, testGridPosition))
-                {
-                    continue;
-                }
+                    if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))
+                    {
+                        continue;
+                    }
 
-                int pathfindingDistanceMultiplier = 10;
-                if (Pathfinding.Instance.GetPathLength(unitGridPosition, testGridPosition) > maxMoveDistance * pathfindingDistanceMultiplier)
-                {
-                    // Path length is too long
-                    continue;
-                }
+                    if (!Pathfinding.Instance.HasPath(unitGridPosition, testGridPosition))
+                    {
+                        continue;
+                    }
 
-                validGridPositionList.Add(testGridPosition);
+                    int pathfindingDistanceMultiplier = 10;
+                    if (Pathfinding.Instance.GetPathLength(unitGridPosition, testGridPosition) > maxMoveDistance * pathfindingDistanceMultiplier)
+                    {
+                        // Path length is too long
+                        continue;
+                    }
+
+                    validGridPositionList.Add(testGridPosition);
+                }
             }
         }
 
@@ -135,5 +187,5 @@ public class MoveAction : BaseAction
             actionValue = targetCountAtGridPosition * 10,
         };
     }
-    
+
 }

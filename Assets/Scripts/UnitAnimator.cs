@@ -19,6 +19,7 @@ public class UnitAnimator : MonoBehaviour
         {
             moveAction.OnStartMoving += MoveAction_OnStartMoving;
             moveAction.OnStopMoving += MoveAction_OnStopMoving;
+            moveAction.OnChangedFloorsStarted += MoveAction_OnChangedFloorsStarted;
         }
 
         if (TryGetComponent<ShootAction>(out ShootAction shootAction))
@@ -30,6 +31,20 @@ public class UnitAnimator : MonoBehaviour
         {
             swordAction.OnSwordActionStarted += SwordAction_OnSwordActionStarted;
             swordAction.OnSwordActionCompleted += SwordAction_OnSwordActionCompleted;
+        }
+    }
+
+    private void MoveAction_OnChangedFloorsStarted(object sender, MoveAction.OnChangeFloorsStartedEventArgs e)
+    {
+        if (e.targetGridPosition.floor > e.unitGridPosition.floor)
+        {
+            // Jump
+            animator.SetTrigger("JumpUp");
+        }
+        else
+        {
+            // Drop
+            animator.SetTrigger("JumpDown");
         }
     }
 
@@ -63,7 +78,7 @@ public class UnitAnimator : MonoBehaviour
     {
         animator.SetTrigger("Shoot");
 
-        Transform bulletProjectileTransform = 
+        Transform bulletProjectileTransform =
             Instantiate(bulletProjectilePrefab, shootPointTransform.position, Quaternion.identity);
 
         BulletProjectile bulletProjectile = bulletProjectileTransform.GetComponent<BulletProjectile>();
